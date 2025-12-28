@@ -116,13 +116,14 @@ const App: React.FC = () => {
     }
 
     try {
-      // Create a temporary table in alasql
-      alasql(`DROP TABLE IF EXISTS ${tableName}`);
-      alasql(`CREATE TABLE ${tableName}`);
-      alasql.tables[tableName].data = parsedData;
-
-      // Execute the query
-      const result = alasql(sqlQuery);
+      // Replace table name in query with the data array
+      const modifiedQuery = sqlQuery.replace(
+        new RegExp(`\\b${tableName}\\b`, 'g'),
+        '?'
+      );
+      
+      // Execute the query with data
+      const result = alasql(modifiedQuery, [parsedData]);
       
       // Add to history
       const historyItem: QueryHistory = {
@@ -154,7 +155,7 @@ const App: React.FC = () => {
     navigator.clipboard.writeText(text);
   };
 
-  const useHistoryQuery = (query: string) => {
+  const handleUseHistoryQuery = (query: string) => {
     setSqlQuery(query);
   };
 
@@ -344,7 +345,7 @@ const App: React.FC = () => {
                     </div>
                     <button
                       className="use-query-btn"
-                      onClick={() => useHistoryQuery(item.query)}
+                      onClick={() => handleUseHistoryQuery(item.query)}
                     >
                       Use
                     </button>
