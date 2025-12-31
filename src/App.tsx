@@ -116,14 +116,15 @@ const App: React.FC = () => {
     }
 
     try {
-      // Replace table name in query with the data array
-      const modifiedQuery = sqlQuery.replace(
-        new RegExp(`\\b${tableName}\\b`, 'g'),
-        '?'
-      );
+      // Drop existing table if it exists
+      alasql(`DROP TABLE IF EXISTS ${tableName}`);
       
-      // Execute the query with data
-      const result = alasql(modifiedQuery, [parsedData]);
+      // Create table from the data array
+      alasql(`CREATE TABLE ${tableName}`);
+      (alasql as any).tables[tableName].data = parsedData;
+
+      // Execute the query
+      const result = alasql(sqlQuery);
       
       // Add to history
       const historyItem: QueryHistory = {
